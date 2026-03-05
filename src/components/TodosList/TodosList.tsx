@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Todo } from '../../types/Todo';
 import classNames from 'classnames';
 import * as todosServices from '../../api/todos';
@@ -29,6 +29,7 @@ export const TodosList: React.FC<Props> = ({
   setActiveUpdate,
 }) => {
   const [todosTitle, setTodosTitle] = useState('');
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const handleTodosTitle = (event: React.ChangeEvent<HTMLInputElement>) => {
     setTodosTitle(event.target.value);
@@ -40,10 +41,18 @@ export const TodosList: React.FC<Props> = ({
       return;
     }
 
+    const normalizedTitle = todosTitle.trim();
+
+    if (normalizedTitle === activeUpdate.title) {
+      setActiveUpdate(null);
+
+      return;
+    }
+
     const diffTodo: Todo = {
       id: activeUpdate.id,
       userId: todosServices.USER_ID,
-      title: todosTitle,
+      title: normalizedTitle,
       completed: activeUpdate.completed,
     };
 
@@ -53,6 +62,7 @@ export const TodosList: React.FC<Props> = ({
   useEffect(() => {
     if (activeUpdate) {
       setTodosTitle(activeUpdate.title);
+      inputRef.current?.focus();
     }
   }, [activeUpdate]);
 
@@ -90,7 +100,7 @@ export const TodosList: React.FC<Props> = ({
                   }}
                 >
                   <input
-                    autoFocus
+                    ref={inputRef}
                     data-cy="TodoTitleField"
                     type="text"
                     className="todo__title-field"

@@ -7,7 +7,7 @@ export function handleError(
   errorType: ErrorType | null,
 ) {
   if (errorType !== null) {
-    clearTimeout(timerID);
+    window.clearTimeout(timerID);
     timerID = undefined;
   }
 
@@ -15,6 +15,11 @@ export function handleError(
     timerID = setTimeout(() => {
       callback(null);
     }, 3000);
+  }
+
+  if (errorType === null) {
+    clearTimeout(timerID);
+    timerID = undefined;
   }
 
   callback(errorType);

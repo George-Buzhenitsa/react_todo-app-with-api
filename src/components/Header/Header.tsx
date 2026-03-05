@@ -8,7 +8,6 @@ import * as todosServices from '../../api/todos';
 interface Props {
   todosList: Todo[];
   todosCounter: number;
-  errorCounter: number;
   activeTodo: Todo[];
   completeAll: () => void;
   setTodosList: React.Dispatch<React.SetStateAction<Todo[]>>;
@@ -21,7 +20,6 @@ interface Props {
 export const Header: React.FC<Props> = ({
   todosList,
   todosCounter,
-  errorCounter,
   activeTodo,
   completeAll,
   setTodosList,
@@ -47,8 +45,13 @@ export const Header: React.FC<Props> = ({
     event.preventDefault();
 
     if (title.trim() === '') {
-      setErrorCounter(current => current + 1);
-      handleError(setErrorType, { type: 'empty', amount: errorCounter });
+      setErrorCounter(current => {
+        const newValue = current + 1;
+
+        handleError(setErrorType, { type: 'empty', errorAmount: newValue });
+
+        return newValue;
+      });
 
       return;
     }
@@ -61,10 +64,10 @@ export const Header: React.FC<Props> = ({
 
     const temp = { id: 0, ...newTodo };
 
-    const request = todosServices.addTodos(newTodo);
-
     setTempTodo(temp);
     setActiveTodo([temp]);
+
+    const request = todosServices.addTodos(newTodo);
 
     request
       .then((createdTodo: Todo) => {
@@ -72,8 +75,13 @@ export const Header: React.FC<Props> = ({
         onSuccess();
       })
       .catch((error: Error) => {
-        setErrorCounter(current => current + 1);
-        handleError(setErrorType, { type: 'add', amount: errorCounter });
+        setErrorCounter(current => {
+          const newValue = current + 1;
+
+          handleError(setErrorType, { type: 'add', errorAmount: newValue });
+
+          return newValue;
+        });
         setActiveTodo([]);
         throw error;
       })

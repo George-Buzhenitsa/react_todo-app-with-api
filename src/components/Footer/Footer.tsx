@@ -16,6 +16,7 @@ interface Props {
   setCompleted: React.Dispatch<React.SetStateAction<boolean>>;
   setActiveTodo: React.Dispatch<React.SetStateAction<Todo[]>>;
   setErrorType: React.Dispatch<React.SetStateAction<ErrorType | null>>;
+  setErrorCounter: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export const Footer: React.FC<Props> = ({
@@ -30,6 +31,7 @@ export const Footer: React.FC<Props> = ({
   setCompleted,
   setActiveTodo,
   setErrorType,
+  setErrorCounter,
 }) => {
   const clearCompleted = async () => {
     const completedTodos = [...todosList].filter(current => current.completed);
@@ -40,7 +42,13 @@ export const Footer: React.FC<Props> = ({
     try {
       await Promise.all([...promiseArray]);
     } catch (error) {
-      handleError(setErrorType, { type: 'delete', time: Date.now() });
+      setErrorCounter(current => {
+        const newValue = current + 1;
+
+        handleError(setErrorType, { type: 'delete', errorAmount: newValue });
+
+        return newValue;
+      });
       throw error;
     }
   };

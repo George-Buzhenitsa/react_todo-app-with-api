@@ -24,7 +24,7 @@ export const App: React.FC = () => {
   const [active, setActive] = useState(false);
   const [completed, setCompleted] = useState(false);
 
-  const [errorCounter, setErrorCounter] = useState(0);
+  const [, setErrorCounter] = useState(0);
 
   const loadTodos = async () => {
     try {
@@ -32,8 +32,13 @@ export const App: React.FC = () => {
 
       setTodosList(todosData);
     } catch (error) {
-      setErrorCounter(current => current + 1);
-      handleError(setErrorType, { type: 'loading', amount: errorCounter });
+      setErrorCounter(current => {
+        const newValue = current + 1;
+
+        handleError(setErrorType, { type: 'loading', errorAmount: newValue });
+
+        return newValue;
+      });
       throw error;
     }
   };
@@ -68,8 +73,13 @@ export const App: React.FC = () => {
         );
       });
     } catch (error) {
-      setErrorCounter(current => current + 1);
-      handleError(setErrorType, { type: 'delete', amount: errorCounter });
+      setErrorCounter(current => {
+        const newValue = current + 1;
+
+        handleError(setErrorType, { type: 'delete', errorAmount: newValue });
+
+        return newValue;
+      });
       throw error;
     } finally {
       setActiveTodo([]);
@@ -85,19 +95,25 @@ export const App: React.FC = () => {
     try {
       await todosServices.updateTodos(updatedTodo);
 
-      return setTodosList(currentTodos =>
+      setTodosList(currentTodos =>
         currentTodos.map(todo =>
           todo.id === updatedTodo.id ? updatedTodo : todo,
         ),
       );
+      setActiveUpdate(null);
+      setTempUpdated(null);
     } catch (error) {
       setTodosList(todosList);
-      setErrorCounter(current => current + 1);
-      handleError(setErrorType, { type: 'update', amount: errorCounter });
-      throw error;
-    } finally {
+      setErrorCounter(current => {
+        const newValue = current + 1;
+
+        handleError(setErrorType, { type: 'update', errorAmount: newValue });
+
+        return newValue;
+      });
       setTempUpdated(null);
       setActiveUpdate(null);
+      throw error;
     }
   };
 
@@ -128,8 +144,13 @@ export const App: React.FC = () => {
         });
       })
       .catch((error: Error) => {
-        setErrorCounter(current => current + 1);
-        handleError(setErrorType, { type: 'update', amount: errorCounter });
+        setErrorCounter(current => {
+          const newValue = current + 1;
+
+          handleError(setErrorType, { type: 'update', errorAmount: newValue });
+
+          return newValue;
+        });
         throw error;
       })
       .finally(() => {
@@ -153,8 +174,13 @@ export const App: React.FC = () => {
     try {
       await Promise.all([...promiseArray]);
     } catch (error) {
-      setErrorCounter(current => current + 1);
-      handleError(setErrorType, { type: 'update', amount: errorCounter });
+      setErrorCounter(current => {
+        const newValue = current + 1;
+
+        handleError(setErrorType, { type: 'update', errorAmount: newValue });
+
+        return newValue;
+      });
       throw error;
     }
   };
@@ -175,7 +201,6 @@ export const App: React.FC = () => {
         <Header
           todosList={todosList}
           todosCounter={todosCounter}
-          errorCounter={errorCounter}
           activeTodo={activeTodo}
           setTodosList={setTodosList}
           completeAll={completeAllTodos}
@@ -212,6 +237,7 @@ export const App: React.FC = () => {
             setCompleted={setCompleted}
             setActiveTodo={setActiveTodo}
             setErrorType={setErrorType}
+            setErrorCounter={setErrorCounter}
           />
         )}
       </div>
