@@ -60,10 +60,7 @@ export const TodosList: React.FC<Props> = ({
   };
 
   useEffect(() => {
-    if (activeUpdate) {
-      setTodosTitle(activeUpdate.title);
-      inputRef.current?.focus();
-    }
+    inputRef.current?.focus();
   }, [activeUpdate]);
 
   return (
@@ -74,7 +71,10 @@ export const TodosList: React.FC<Props> = ({
             key={todo.id}
             data-cy="Todo"
             className={classNames('todo', { completed: todo.completed })}
-            onDoubleClick={() => setActiveUpdate(todo)}
+            onDoubleClick={() => {
+              setActiveUpdate(todo);
+              setTodosTitle(todo.title);
+            }}
           >
             {/* eslint-disable jsx-a11y/label-has-associated-control */}
             <label className="todo__status-label">

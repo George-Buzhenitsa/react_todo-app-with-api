@@ -64,6 +64,7 @@ export const App: React.FC = () => {
 
   const deleteTodo = async (todoId: number) => {
     handleError(setErrorType, null);
+
     try {
       await todosServices.deleteTodos(todoId);
 
@@ -88,8 +89,26 @@ export const App: React.FC = () => {
 
   const updateTodo = async (updatedTodo: Todo) => {
     setTempUpdated(updatedTodo);
-    if (updatedTodo.title === '') {
-      return deleteTodo(updatedTodo.id);
+
+    if (updatedTodo.title.trim() === '') {
+      try {
+        await deleteTodo(updatedTodo.id);
+      } catch {
+        setErrorCounter(current => {
+          const newValue = current + 1;
+
+          handleError(setErrorType, {
+            type: 'delete',
+            errorAmount: newValue,
+          });
+
+          return newValue;
+        });
+      } finally {
+        setTempUpdated(null);
+      }
+
+      return;
     }
 
     try {
@@ -100,10 +119,27 @@ export const App: React.FC = () => {
           todo.id === updatedTodo.id ? updatedTodo : todo,
         ),
       );
+
       setActiveUpdate(null);
       setTempUpdated(null);
     } catch (error) {
       setTodosList(todosList);
+      if (activeUpdate && updatedTodo.title === '') {
+        setErrorCounter(current => {
+          const newValue = current + 1;
+
+          handleError(setErrorType, {
+            type: 'update',
+            errorAmount: newValue,
+          });
+
+          return newValue;
+        });
+        setTempUpdated(null);
+        setActiveUpdate(null);
+        throw error;
+      }
+
       setErrorCounter(current => {
         const newValue = current + 1;
 
@@ -112,7 +148,6 @@ export const App: React.FC = () => {
         return newValue;
       });
       setTempUpdated(null);
-      setActiveUpdate(null);
       throw error;
     }
   };
