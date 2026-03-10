@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Todo } from '../../types/Todo';
 import classNames from 'classnames';
-import * as todosServices from '../../api/todos';
+import { USER_ID } from '../../variables/UserID';
 
 interface Props {
   todos: Todo[];
@@ -51,7 +51,7 @@ export const TodosList: React.FC<Props> = ({
 
     const diffTodo: Todo = {
       id: activeUpdate.id,
-      userId: todosServices.USER_ID,
+      userId: USER_ID,
       title: normalizedTitle,
       completed: activeUpdate.completed,
     };

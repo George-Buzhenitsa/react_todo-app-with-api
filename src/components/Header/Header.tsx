@@ -2,8 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Todo } from '../../types/Todo';
 import classNames from 'classnames';
 import { handleError } from '../../services/ErrorHandling';
-import { ErrorType } from '../../types/Error';
+import { ErrorEnum, ErrorType } from '../../types/Error';
 import * as todosServices from '../../api/todos';
+import { USER_ID } from '../../variables/UserID';
 
 interface Props {
   todosList: Todo[];
@@ -48,7 +49,10 @@ export const Header: React.FC<Props> = ({
       setErrorCounter(current => {
         const newValue = current + 1;
 
-        handleError(setErrorType, { type: 'empty', errorAmount: newValue });
+        handleError(setErrorType, {
+          type: ErrorEnum.EMPTY,
+          errorAmount: newValue,
+        });
 
         return newValue;
       });
@@ -57,7 +61,7 @@ export const Header: React.FC<Props> = ({
     }
 
     const newTodo: Omit<Todo, 'id'> = {
-      userId: todosServices.USER_ID,
+      userId: USER_ID,
       title: title.trim(),
       completed: false,
     };
@@ -78,7 +82,10 @@ export const Header: React.FC<Props> = ({
         setErrorCounter(current => {
           const newValue = current + 1;
 
-          handleError(setErrorType, { type: 'add', errorAmount: newValue });
+          handleError(setErrorType, {
+            type: ErrorEnum.ADD,
+            errorAmount: newValue,
+          });
 
           return newValue;
         });
@@ -98,7 +105,6 @@ export const Header: React.FC<Props> = ({
 
   return (
     <header className="todoapp__header">
-      {/* this button should have `active` class only if all todos are completed */}
       {todosList.length > 0 && (
         <button
           type="button"
@@ -110,7 +116,6 @@ export const Header: React.FC<Props> = ({
         />
       )}
 
-      {/* Add a todo on form submit */}
       <form onSubmit={addTodos}>
         <input
           ref={inputField}

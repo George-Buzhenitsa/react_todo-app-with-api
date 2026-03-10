@@ -4,12 +4,14 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { UserWarning } from './UserWarning';
 import * as todosServices from './api/todos';
 import { Todo } from './types/Todo';
-import { ErrorType } from './types/Error';
-import classNames from 'classnames';
+import { ErrorEnum, ErrorType } from './types/Error';
 import { handleError } from './services/ErrorHandling';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { TodosList } from './components/TodosList';
+import { USER_ID } from './variables/UserID';
+import { Error } from './components/ErrorBlock';
+import { Filter } from './types/Filter';
 
 export const App: React.FC = () => {
   const [todosList, setTodosList] = useState<Todo[]>([]);
@@ -20,9 +22,7 @@ export const App: React.FC = () => {
   const [activeTodo, setActiveTodo] = useState<Todo[]>([]);
   const [errorType, setErrorType] = useState<ErrorType | null>(null);
 
-  const [all, setAll] = useState(true);
-  const [active, setActive] = useState(false);
-  const [completed, setCompleted] = useState(false);
+  const [filter, setFilter] = useState<Filter>(Filter.ALL);
 
   const [, setErrorCounter] = useState(0);
 
@@ -35,7 +35,10 @@ export const App: React.FC = () => {
       setErrorCounter(current => {
         const newValue = current + 1;
 
-        handleError(setErrorType, { type: 'loading', errorAmount: newValue });
+        handleError(setErrorType, {
+          type: ErrorEnum.LOADING,
+          errorAmount: newValue,
+        });
 
         return newValue;
       });
@@ -45,17 +48,17 @@ export const App: React.FC = () => {
 
   const todos = useMemo(() => {
     return [...todosList].filter((current: Todo) => {
-      if (active) {
+      if (filter === Filter.ACTIVE) {
         return !current.completed;
       }
 
-      if (completed) {
+      if (filter === Filter.COMPLETED) {
         return current.completed;
       }
 
       return current;
     });
-  }, [active, completed, todosList]);
+  }, [filter, todosList]);
 
   const todosCounter: number = useMemo(() => {
     return [...todosList].filter((todo: Todo) => todo.completed === false)
@@ -77,7 +80,10 @@ export const App: React.FC = () => {
       setErrorCounter(current => {
         const newValue = current + 1;
 
-        handleError(setErrorType, { type: 'delete', errorAmount: newValue });
+        handleError(setErrorType, {
+          type: ErrorEnum.DELETE,
+          errorAmount: newValue,
+        });
 
         return newValue;
       });
@@ -98,7 +104,7 @@ export const App: React.FC = () => {
           const newValue = current + 1;
 
           handleError(setErrorType, {
-            type: 'delete',
+            type: ErrorEnum.DELETE,
             errorAmount: newValue,
           });
 
@@ -129,7 +135,7 @@ export const App: React.FC = () => {
           const newValue = current + 1;
 
           handleError(setErrorType, {
-            type: 'update',
+            type: ErrorEnum.UPDATE,
             errorAmount: newValue,
           });
 
@@ -143,7 +149,10 @@ export const App: React.FC = () => {
       setErrorCounter(current => {
         const newValue = current + 1;
 
-        handleError(setErrorType, { type: 'update', errorAmount: newValue });
+        handleError(setErrorType, {
+          type: ErrorEnum.UPDATE,
+          errorAmount: newValue,
+        });
 
         return newValue;
       });
@@ -182,7 +191,10 @@ export const App: React.FC = () => {
         setErrorCounter(current => {
           const newValue = current + 1;
 
-          handleError(setErrorType, { type: 'update', errorAmount: newValue });
+          handleError(setErrorType, {
+            type: ErrorEnum.UPDATE,
+            errorAmount: newValue,
+          });
 
           return newValue;
         });
@@ -212,7 +224,10 @@ export const App: React.FC = () => {
       setErrorCounter(current => {
         const newValue = current + 1;
 
-        handleError(setErrorType, { type: 'update', errorAmount: newValue });
+        handleError(setErrorType, {
+          type: ErrorEnum.UPDATE,
+          errorAmount: newValue,
+        });
 
         return newValue;
       });
@@ -224,7 +239,7 @@ export const App: React.FC = () => {
     loadTodos();
   }, []);
 
-  if (!todosServices.USER_ID) {
+  if (!USER_ID) {
     return <UserWarning />;
   }
 
@@ -258,18 +273,13 @@ export const App: React.FC = () => {
           updateTodo={updateTodo}
         />
 
-        {/* Hide the footer if there are no todos */}
         {todosList.length > 0 && (
           <Footer
             todosList={todosList}
             todosCounter={todosCounter}
-            all={all}
-            active={active}
-            completed={completed}
+            filter={filter}
+            setFilter={setFilter}
             onDelete={deleteTodo}
-            setAll={setAll}
-            setActive={setActive}
-            setCompleted={setCompleted}
             setActiveTodo={setActiveTodo}
             setErrorType={setErrorType}
             setErrorCounter={setErrorCounter}
@@ -277,32 +287,7 @@ export const App: React.FC = () => {
         )}
       </div>
 
-      {/* DON'T use conditional rendering to hide the notification */}
-      {/* Add the 'hidden' class to hide the message smoothly */}
-      <div
-        data-cy="ErrorNotification"
-        className={classNames(
-          'notification is-danger is-light has-text-weight-normal',
-          { hidden: !errorType },
-        )}
-      >
-        <button
-          data-cy="HideErrorButton"
-          type="button"
-          className="delete"
-          onClick={() => setErrorType(null)}
-        />
-        {/* show only one message at a time */}
-        {errorType?.type === 'loading' && 'Unable to load todos'}
-        <br />
-        {errorType?.type === 'empty' && 'Title should not be empty'}
-        <br />
-        {errorType?.type === 'add' && 'Unable to add a todo'}
-        <br />
-        {errorType?.type === 'delete' && 'Unable to delete a todo'}
-        <br />
-        {errorType?.type === 'update' && 'Unable to update a todo'}
-      </div>
+      <Error errorType={errorType} setErrorType={setErrorType} />
     </div>
   );
 };
